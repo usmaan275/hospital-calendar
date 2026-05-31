@@ -86,6 +86,16 @@ export default function DayView({
     setOpen(true);
   }
 
+  function overlaps(a: Visit, b: Visit) {
+    const aStart = new Date(a.start_time);
+    const aEnd = new Date(a.end_time);
+  
+    const bStart = new Date(b.start_time);
+    const bEnd = new Date(b.end_time);
+  
+    return aStart < bEnd && bStart < aEnd;
+  }
+
   return (
     <div className="p-4">
       {/* HEADER */}
@@ -188,6 +198,23 @@ export default function DayView({
 
                 const top = timeToPosition(visibleStart);
                 const height = timeToHeight(visibleStart, visibleEnd);
+                const overlappingVisits = dayVisits.filter(v =>
+                  overlaps(v, visit)
+                );
+                
+                const columnCount = overlappingVisits.length;
+                
+                const columnIndex =
+                  overlappingVisits
+                    .sort(
+                      (a, b) =>
+                        new Date(a.start_time).getTime() -
+                        new Date(b.start_time).getTime()
+                    )
+                    .findIndex(v => v.id === visit.id);
+                
+                const width = 100 / columnCount;
+                const left = columnIndex * width;
 
                 return (
                   <div
@@ -200,6 +227,8 @@ export default function DayView({
                     style={{
                       top,
                       height,
+                      left: `${left}%`,
+                      width: `${width}%`,
                       backgroundColor: visit.color,
                     }}
                   >

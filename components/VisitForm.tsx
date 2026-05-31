@@ -128,8 +128,8 @@ export default function VisitForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60">
-      <div className="w-full rounded-t-3xl bg-[#111827] p-5">
+    <div className="fixed inset-0 z-50 flex items-end bg-black/60 sm:items-center">
+      <div className="w-full py-10 rounded-3xl bg-[#111827] p-5">
         <h2 className="mb-4 text-xl font-semibold">
           {currentVisit.id ? "Edit Visit" : "Create Visit"}
         </h2>
@@ -182,7 +182,7 @@ export default function VisitForm({
           {currentVisit.id ? (
             <button
               onClick={remove}
-              className="px-3 py-2 rounded-lg text-red-400 hover:bg-red-500/10 transition"
+              className="px-3 py-2 rounded-lg text-red-400 bg-red-500/10 hover:bg-red-500/20 transition"
             >
               Delete
             </button>

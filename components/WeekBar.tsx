@@ -1,10 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  addWeeks,
-  isSameDay,
-} from "date-fns";
+import { addWeeks, isSameDay } from "date-fns";
 
 import {
   getWeekDays,
@@ -17,6 +14,7 @@ interface Props {
   onSelectDay: (day: Date) => void;
   weekDate: Date;
   setWeekDate: (date: Date) => void;
+  onToday: () => void;
 }
 
 export default function WeekBar({
@@ -24,8 +22,10 @@ export default function WeekBar({
   onSelectDay,
   weekDate,
   setWeekDate,
+  onToday,
 }: Props) {
   const weekDays = getWeekDays(weekDate);
+  const viewingToday = isSameDay(selectedDay, new Date());
 
   return (
     <div className="sticky top-0 z-20 bg-[#070B14] border-b border-white/10">
@@ -69,10 +69,9 @@ export default function WeekBar({
                     justify-center
                     text-sm
                     transition
-                    ${
-                      selected
-                        ? "bg-blue-600 text-white"
-                        : "bg-transparent"
+                    ${selected
+                      ? "bg-blue-600 text-white"
+                      : "bg-transparent"
                     }
                   `}
                 >
@@ -90,6 +89,21 @@ export default function WeekBar({
           className="p-2"
         >
           <ChevronRight size={20} />
+        </button>
+      </div>
+      <div className="flex justify-center">
+        <button
+          onClick={onToday}
+          disabled={viewingToday}
+          className={`
+            px-8 py-2 rounded-lg transition mb-4
+            ${viewingToday
+                ? "opacity-50 cursor-not-allowed bg-white/10"
+                : "bg-blue-600 hover:bg-blue-500"
+              }
+          `}
+        >
+          Today
         </button>
       </div>
     </div>
