@@ -57,6 +57,17 @@ export default function VisitForm({
     setColor(visit.color);
   }, [visit]);
 
+  useEffect(() => {
+    if (!open) return;
+  
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [open]);
+
   if (!open || !visit) return null;
 
   const currentVisit = visit;
@@ -128,8 +139,8 @@ export default function VisitForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5">
-      <div className="w-full py-10 rounded-3xl bg-[#111827] p-5">
+    <div className="fixed inset-0 z-50 bg-black/60">
+      <div className="absolute top-0 left-0 right-0 w-full rounded-b-3xl bg-[#111827] p-5 pt-6 shadow-xl">
         <h2 className="mb-4 text-xl font-semibold">
           {currentVisit.id ? "Edit Visit" : "Create Visit"}
         </h2>
