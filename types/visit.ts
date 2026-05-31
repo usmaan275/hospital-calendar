@@ -4,5 +4,4 @@ export type Visit = {
     start_time: string;
     end_time: string;
     color: string;
-    is_night_shift: boolean;
   };

@@ -79,8 +79,7 @@ export default function DayView({
       name: "",
       start_time: start.toISOString(),
       end_time: end.toISOString(),
-      color: "#3b82f6",
-      is_night_shift: false,
+      color: "#3b82f6"
     });
 
     setOpen(true);
@@ -118,8 +117,7 @@ export default function DayView({
               name: "",
               start_time: start.toISOString(),
               end_time: end.toISOString(),
-              color: "#3b82f6",
-              is_night_shift: true,
+              color: "#3b82f6"
             });
 
             setOpen(true);
