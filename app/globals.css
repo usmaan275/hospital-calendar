@@ -135,6 +135,7 @@ html, body {
 }
 
 body {
-  background: var(--background);
+  background: #070B14;
   color: var(--foreground);
+  overscroll-behavior: none;
 }
