@@ -138,7 +138,6 @@ export default function VisitForm({
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          autoFocus
           placeholder="Name"
           className="mb-4 w-full rounded-lg border border-white/10 bg-[#1F2937] p-3 outline-none focus:border-blue-500 transition"
           required
