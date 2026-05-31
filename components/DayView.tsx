@@ -101,7 +101,7 @@ export default function DayView({
 
             const end = new Date(selectedDay);
             end.setDate(end.getDate() + 1);
-            end.setHours(8, 0, 0, 0);
+            end.setHours(10, 0, 0, 0);
 
             setSelectedVisit({
               id: "",
