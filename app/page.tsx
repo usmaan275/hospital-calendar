@@ -55,7 +55,7 @@ export default function HomePage() {
       return;
     }
   
-    if (Math.abs(diffX) < 120) {
+    if (Math.abs(diffX) < 60) {
       return;
     }
   

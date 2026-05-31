@@ -128,7 +128,7 @@ export default function VisitForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60 sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-5">
       <div className="w-full py-10 rounded-3xl bg-[#111827] p-5">
         <h2 className="mb-4 text-xl font-semibold">
           {currentVisit.id ? "Edit Visit" : "Create Visit"}

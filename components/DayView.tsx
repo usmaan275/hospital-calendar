@@ -100,7 +100,7 @@ export default function DayView({
     <div className="p-4">
       {/* HEADER */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
+        <h2 className="text-lg font-semibold">
           {format(selectedDay, "EEEE d MMMM yyyy")}
         </h2>
 
