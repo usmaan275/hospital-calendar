@@ -13,11 +13,12 @@ interface Props {
 }
 
 const COLORS = [
-  "#3b82f6",
   "#8b5cf6",
+  "#3b82f6",
   "#06b6d4",
   "#10b981",
-  "#f59e0b",
+  "#dfbb2c",
+  "#d97706",
   "#ef4444",
 ];
 
@@ -139,8 +140,8 @@ export default function VisitForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60">
-      <div className="absolute top-0 left-0 right-0 w-full rounded-b-3xl bg-[#111827] p-5 pt-6 shadow-xl">
+    <div className="fixed inset-0 z-50 bg-black/60" onClick={() => {if (!saving) setOpen(false);}}>
+      <div className="absolute top-4 left-4 right-4 rounded-3xl bg-[#111827] p-5 pt-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
         <h2 className="mb-4 text-xl font-semibold">
           {currentVisit.id ? "Edit Visit" : "Create Visit"}
         </h2>
@@ -203,7 +204,7 @@ export default function VisitForm({
 
           <div className="flex gap-2">
             <button
-              onClick={() => setOpen(false)}
+              onClick={() => {if (!saving) setOpen(false);}}
               className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
             >
               Cancel

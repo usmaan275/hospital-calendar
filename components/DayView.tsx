@@ -14,6 +14,20 @@ interface Props {
 const START_HOUR = 7;
 const END_HOUR = 23;
 const PX_PER_HOUR = 64;
+type PositionedVisit = Visit & {
+  column: number;
+  columns: number;
+};
+
+const COLORS = [
+  "#8b5cf6",
+  "#3b82f6",
+  "#06b6d4",
+  "#10b981",
+  "#dfbb2c",
+  "#d97706",
+  "#ef4444",
+];
 
 export default function DayView({
   selectedDay,
@@ -51,6 +65,11 @@ export default function DayView({
     });
   }, [visits, selectedDay]);
 
+  const positionedVisits = useMemo(
+    () => calculatePositions(dayVisits),
+    [dayVisits]
+  );
+
   function timeToPosition(date: Date) {
     const hours =
       date.getHours() +
@@ -79,20 +98,73 @@ export default function DayView({
       name: "",
       start_time: start.toISOString(),
       end_time: end.toISOString(),
-      color: "#3b82f6"
+      color: COLORS[Math.floor(Math.random() * COLORS.length)]
     });
 
     setOpen(true);
   }
 
-  function overlaps(a: Visit, b: Visit) {
-    const aStart = new Date(a.start_time);
-    const aEnd = new Date(a.end_time);
-  
-    const bStart = new Date(b.start_time);
-    const bEnd = new Date(b.end_time);
-  
-    return aStart < bEnd && bStart < aEnd;
+  function calculatePositions(
+    visits: Visit[]
+  ): PositionedVisit[] {
+    const sorted = [...visits].sort(
+      (a, b) =>
+        new Date(a.start_time).getTime() -
+        new Date(b.start_time).getTime()
+    );
+
+    const positioned: PositionedVisit[] = [];
+
+    for (const visit of sorted) {
+      const usedColumns = new Set<number>();
+
+      positioned.forEach((other) => {
+        const overlaps =
+          new Date(visit.start_time) <
+          new Date(other.end_time) &&
+          new Date(visit.end_time) >
+          new Date(other.start_time);
+
+        if (overlaps) {
+          usedColumns.add(other.column);
+        }
+      });
+
+      let column = 0;
+
+      while (usedColumns.has(column)) {
+        column++;
+      }
+
+      positioned.push({
+        ...visit,
+        column,
+        columns: 1,
+      });
+    }
+
+    positioned.forEach((visit) => {
+      let maxColumns = 1;
+
+      positioned.forEach((other) => {
+        const overlaps =
+          new Date(visit.start_time) <
+          new Date(other.end_time) &&
+          new Date(visit.end_time) >
+          new Date(other.start_time);
+
+        if (overlaps) {
+          maxColumns = Math.max(
+            maxColumns,
+            other.column + 1
+          );
+        }
+      });
+
+      visit.columns = maxColumns;
+    });
+
+    return positioned;
   }
 
   return (
@@ -117,7 +189,7 @@ export default function DayView({
               name: "",
               start_time: start.toISOString(),
               end_time: end.toISOString(),
-              color: "#3b82f6"
+              color: COLORS[Math.floor(Math.random() * COLORS.length)]
             });
 
             setOpen(true);
@@ -171,7 +243,7 @@ export default function DayView({
 
             {/* VISITS */}
             <div className="absolute left-0 right-0 top-0">
-              {dayVisits.map((visit) => {
+              {positionedVisits.map((visit) => {
                 const start = new Date(visit.start_time);
                 const end = new Date(visit.end_time);
 
@@ -196,23 +268,8 @@ export default function DayView({
 
                 const top = timeToPosition(visibleStart);
                 const height = timeToHeight(visibleStart, visibleEnd);
-                const overlappingVisits = dayVisits.filter(v =>
-                  overlaps(v, visit)
-                );
-                
-                const columnCount = overlappingVisits.length;
-                
-                const columnIndex =
-                  overlappingVisits
-                    .sort(
-                      (a, b) =>
-                        new Date(a.start_time).getTime() -
-                        new Date(b.start_time).getTime()
-                    )
-                    .findIndex(v => v.id === visit.id);
-                
-                const width = 100 / columnCount;
-                const left = columnIndex * width;
+                const width = 100 / visit.columns;
+                const left = visit.column * width;
 
                 return (
                   <div
