@@ -124,7 +124,7 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
     <div className="p-4">
       {/* HEADER */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-base font-semibold">
           {format(selectedDay, "EEEE d MMMM yyyy")}
         </h2>
         <button
@@ -201,10 +201,23 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
                       backgroundColor: visit.color,
                     }}
                   >
-                    <div className="font-semibold">{visit.name}</div>
-                    <div className="text-xs opacity-90">
-                      {format(start, "HH:mm")} – {format(end, "HH:mm")}
-                    </div>
+                    {(() => {
+                      const durationMins = (end.getTime() - start.getTime()) / (1000 * 60);
+                      const isShort = durationMins < 60;
+                      return isShort ? (
+                        <div className="text-xs leading-tight truncate">
+                          <span className="font-semibold">{visit.name}</span>
+                          <span className="opacity-90"> {format(start, "HH:mm")}–{format(end, "HH:mm")}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="font-semibold">{visit.name}</div>
+                          <div className="text-xs opacity-90">
+                            {format(start, "HH:mm")} – {format(end, "HH:mm")}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 );
               })}
