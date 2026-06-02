@@ -22,12 +22,7 @@ const COLORS = [
   "#ef4444",
 ];
 
-export default function VisitForm({
-  open,
-  setOpen,
-  visit,
-  onSaved,
-}: Props) {
+export default function VisitForm({ open, setOpen, visit, onSaved }: Props) {
   const [name, setName] = useState("");
   const [start, setStart] = useState("08:00");
   const [end, setEnd] = useState("09:00");
@@ -36,9 +31,7 @@ export default function VisitForm({
 
   useEffect(() => {
     if (!visit) return;
-
     setName(visit.name);
-
     setStart(
       new Date(visit.start_time).toLocaleTimeString([], {
         hour: "2-digit",
@@ -46,7 +39,6 @@ export default function VisitForm({
         hour12: false,
       })
     );
-
     setEnd(
       new Date(visit.end_time).toLocaleTimeString([], {
         hour: "2-digit",
@@ -54,18 +46,20 @@ export default function VisitForm({
         hour12: false,
       })
     );
-
     setColor(visit.color);
   }, [visit]);
 
   useEffect(() => {
     if (!open) return;
-  
-    const original = document.body.style.overflow;
+
+    // Measure scrollbar width before locking, pad body to compensate
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     document.body.style.overflow = "hidden";
-  
+    document.body.style.paddingRight = `${scrollbarWidth}px`;
+
     return () => {
-      document.body.style.overflow = original;
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
     };
   }, [open]);
 
@@ -75,11 +69,8 @@ export default function VisitForm({
 
   function buildDate(time: string) {
     const [h, m] = time.split(":");
-
     const d = new Date(currentVisit.start_time);
-
     d.setHours(Number(h), Number(m), 0, 0);
-
     return d;
   }
 
@@ -94,10 +85,8 @@ export default function VisitForm({
 
     const startDate = buildDate(start);
     const endDate = buildDate(end);
-
     let finalEndDate = endDate;
 
-    // NIGHT SHIFT DETECTION
     if (endDate <= startDate) {
       finalEndDate = new Date(endDate);
       finalEndDate.setDate(finalEndDate.getDate() + 1);
@@ -129,24 +118,24 @@ export default function VisitForm({
 
   async function remove() {
     if (!currentVisit.id) return;
-
-    await supabase
-      .from("visits")
-      .delete()
-      .eq("id", currentVisit.id);
-
+    await supabase.from("visits").delete().eq("id", currentVisit.id);
     setOpen(false);
     onSaved();
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60" onClick={() => {if (!saving) setOpen(false);}}>
-      <div className="absolute top-4 left-4 right-4 rounded-3xl bg-[#111827] p-5 pt-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 z-50 bg-black/60"
+      onClick={() => { if (!saving) setOpen(false); }}
+    >
+      <div
+        className="absolute top-4 left-4 right-4 rounded-3xl bg-[#111827] p-5 pt-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="mb-4 text-xl font-semibold">
           {currentVisit.id ? "Edit Visit" : "Create Visit"}
         </h2>
 
-        {/* NAME */}
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -156,7 +145,6 @@ export default function VisitForm({
           required
         />
 
-        {/* TIME */}
         <div className="mb-4 flex gap-2">
           <input
             type="time"
@@ -164,7 +152,6 @@ export default function VisitForm({
             onChange={(e) => setStart(e.target.value)}
             className="flex-1 rounded-lg bg-[#1F2937] p-3 outline-none hover:bg-[#273244] transition"
           />
-
           <input
             type="time"
             value={end}
@@ -173,7 +160,6 @@ export default function VisitForm({
           />
         </div>
 
-        {/* COLORS */}
         <div className="mb-6 flex gap-2">
           {COLORS.map((c) => (
             <button
@@ -189,7 +175,6 @@ export default function VisitForm({
           ))}
         </div>
 
-        {/* ACTIONS */}
         <div className="flex justify-between items-center">
           {currentVisit.id ? (
             <button
@@ -204,19 +189,19 @@ export default function VisitForm({
 
           <div className="flex gap-2">
             <button
-              onClick={() => {if (!saving) setOpen(false);}}
+              onClick={() => { if (!saving) setOpen(false); }}
               className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition"
             >
               Cancel
             </button>
-
             <button
               onClick={save}
               disabled={saving || !name.trim()}
-              className={`px-4 py-2 rounded-lg transition ${saving || !name.trim()
-                ? "bg-blue-400 opacity-50 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-500 active:scale-[0.98]"
-                }`}
+              className={`px-4 py-2 rounded-lg transition ${
+                saving || !name.trim()
+                  ? "bg-blue-400 opacity-50 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-500 active:scale-[0.98]"
+              }`}
             >
               {saving ? "Saving..." : "Save"}
             </button>
