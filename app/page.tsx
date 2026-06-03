@@ -90,7 +90,7 @@ export default function HomePage() {
   function jumpToDay(day: Date) {
     const carousel = carouselRef.current;
     if (carousel) {
-      carousel.style.transition = "opacity 200ms ease";
+      carousel.style.transition = "opacity 400ms ease";
       carousel.style.opacity = "0";
     }
     setTimeout(() => {
@@ -103,7 +103,7 @@ export default function HomePage() {
         el.style.transform = `translateX(${-getWidth()}px)`;
       }
       if (carousel) {
-        carousel.style.transition = "opacity 500ms ease";
+        carousel.style.transition = "opacity 1000ms ease";
         carousel.style.opacity = "1";
       }
     }, 120);
@@ -116,7 +116,7 @@ export default function HomePage() {
     if (carousel) {
       carousel.style.opacity = "0";
       requestAnimationFrame(() => {
-        carousel.style.transition = "opacity 500ms ease";
+        carousel.style.transition = "opacity 1000ms ease";
         carousel.style.opacity = "1";
       });
     }
@@ -126,6 +126,17 @@ export default function HomePage() {
     if (!el) return;
     el.style.transition = "none";
     el.style.transform = `translateX(${-width}px)`;
+
+    // Recalculate on resize (e.g. orientation change)
+    function onResize() {
+      if (isAnimating.current) return;
+      const w = containerRef.current?.offsetWidth ?? window.innerWidth;
+      el!.style.transition = "none";
+      el!.style.transform = `translateX(${-w}px)`;
+    }
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {

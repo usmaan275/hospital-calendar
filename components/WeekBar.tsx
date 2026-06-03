@@ -41,6 +41,16 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
     if (!el) return;
     el.style.transition = "none";
     el.style.transform = `translateX(${-getWidth()}px)`;
+
+    // Recalculate on resize (e.g. orientation change)
+    function onResize() {
+      if (isAnimating.current) return;
+      el!.style.transition = "none";
+      el!.style.transform = `translateX(${-getWidth()}px)`;
+    }
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   function setTranslate(px: number, animated: boolean) {
