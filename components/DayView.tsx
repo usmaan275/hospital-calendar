@@ -158,9 +158,9 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
       )}
 
       {/* GRID — fades in once loaded */}
-      <div className="relative" style={{ opacity: isLoaded ? 1 : 0, transition: "opacity 400ms ease" }}>
+      <div className="relative" style={{ opacity: isLoaded ? 1 : 0, transition: "opacity 300ms ease" }}>
         <div className="flex">
-          <div className="w-14 pr-2 text-right text-xs text-slate-400">
+          <div className="w-14 pr-2 text-right text-xs text-slate-300">
             {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => {
               const hour = START_HOUR + i;
               return (

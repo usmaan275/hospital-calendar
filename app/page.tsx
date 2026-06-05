@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { addDays, subDays } from "date-fns";
 
-import WeekBar from "@/components/WeekBar";
+import WeekBar, { WeekBarHandle } from "@/components/WeekBar";
 import DayView from "@/components/DayView";
 import VisitForm from "@/components/VisitForm";
 import { Visit } from "@/types/visit";
@@ -35,11 +35,11 @@ export default function HomePage() {
   const stripRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const weekBarRef = useRef<WeekBarHandle>(null);
   const isAnimating = useRef(false);
   const selectedDayRef = useRef(selectedDay);
   selectedDayRef.current = selectedDay;
 
-  // Touch state in refs so native handlers can access without stale closures
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const isHorizontal = useRef<boolean | null>(null);
@@ -83,16 +83,24 @@ export default function HomePage() {
       setDays([subDays(newDay, 1), newDay, addDays(newDay, 1)]);
       setSelectedDay(newDay);
       setWeekDate(newDay);
+
+      // Trigger circle transition in sync with panel swap
+      weekBarRef.current?.transitionCircle(newDay);
+
       isAnimating.current = false;
     }, SNAP_DURATION);
   }, []);
 
   function jumpToDay(day: Date) {
     const carousel = carouselRef.current;
+
+    // Fade out carousel and circle simultaneously
     if (carousel) {
       carousel.style.transition = "opacity 400ms ease";
       carousel.style.opacity = "0";
     }
+    weekBarRef.current?.transitionCircle(day);
+
     setTimeout(() => {
       setDays([subDays(day, 1), day, addDays(day, 1)]);
       setSelectedDay(day);
@@ -103,20 +111,18 @@ export default function HomePage() {
         el.style.transform = `translateX(${-getWidth()}px)`;
       }
       if (carousel) {
-        carousel.style.transition = "opacity 1000ms ease";
+        carousel.style.transition = "opacity 700ms ease";
         carousel.style.opacity = "1";
       }
     }, 400);
   }
 
-  // Native touch listeners with { passive: false } so preventDefault actually works
   useEffect(() => {
-    // Initial fade-in on load
     const carousel = carouselRef.current;
     if (carousel) {
       carousel.style.opacity = "0";
       requestAnimationFrame(() => {
-        carousel.style.transition = "opacity 1000ms ease";
+        carousel.style.transition = "opacity 700ms ease";
         carousel.style.opacity = "1";
       });
     }
@@ -127,7 +133,6 @@ export default function HomePage() {
     el.style.transition = "none";
     el.style.transform = `translateX(${-width}px)`;
 
-    // Recalculate on resize (e.g. orientation change)
     function onResize() {
       if (isAnimating.current) return;
       const w = containerRef.current?.offsetWidth ?? window.innerWidth;
@@ -152,21 +157,16 @@ export default function HomePage() {
 
     function onTouchMove(e: TouchEvent) {
       if (isAnimating.current || touchStartX.current === null || touchStartY.current === null) return;
-
       const dx = e.touches[0].clientX - touchStartX.current;
       const dy = e.touches[0].clientY - touchStartY.current;
-
-      // Axis lock: wait for first 6px of movement to decide direction
       if (isHorizontal.current === null) {
         if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
           isHorizontal.current = Math.abs(dx) > Math.abs(dy);
         }
         return;
       }
-
       if (!isHorizontal.current) return;
-
-      e.preventDefault(); // works because listener is non-passive
+      e.preventDefault();
       setTranslate(dx, false);
     }
 
@@ -177,14 +177,11 @@ export default function HomePage() {
         isHorizontal.current = null;
         return;
       }
-
       const dx = e.changedTouches[0].clientX - touchStartX.current;
       const threshold = getWidth() * SNAP_THRESHOLD;
-
       touchStartX.current = null;
       touchStartY.current = null;
       isHorizontal.current = null;
-
       if (dx < -threshold) snapTo("next");
       else if (dx > threshold) snapTo("prev");
       else snapTo("center");
@@ -204,6 +201,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#070B14] text-white overflow-hidden">
       <WeekBar
+        ref={weekBarRef}
         selectedDay={selectedDay}
         onSelectDay={jumpToDay}
         weekDate={weekDate}

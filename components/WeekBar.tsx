@@ -1,10 +1,14 @@
 "use client";
 
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addWeeks, subWeeks, isSameDay } from "date-fns";
 
 import { getWeekDays, formatDayLabel, formatDayNumber } from "@/lib/dates";
+
+export interface WeekBarHandle {
+  transitionCircle: (toDay: Date) => void;
+}
 
 interface Props {
   selectedDay: Date;
@@ -18,9 +22,31 @@ const SNAP_THRESHOLD = 0.2;
 const SNAP_DURATION = 320;
 const EASING = "cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
-export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDate, onToday }: Props) {
+const WeekBar = forwardRef<WeekBarHandle, Props>(function WeekBar(
+  { selectedDay, onSelectDay, weekDate, setWeekDate, onToday },
+  ref
+) {
   const weekDays = getWeekDays(weekDate);
   const viewingToday = isSameDay(selectedDay, new Date());
+
+  const [displayedDay, setDisplayedDay] = useState(selectedDay);
+  const [circleVisible, setCircleVisible] = useState(true);
+  const circleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Called by page.tsx at exactly the right moment for each interaction
+  useImperativeHandle(ref, () => ({
+    transitionCircle(toDay: Date) {
+      if (isSameDay(displayedDay, toDay)) return;
+      if (circleTimerRef.current) clearTimeout(circleTimerRef.current);
+
+      // Fade out (300ms), then swap and fade in (700ms)
+      setCircleVisible(false);
+      circleTimerRef.current = setTimeout(() => {
+        setDisplayedDay(toDay);
+        setCircleVisible(true);
+      }, 300);
+    },
+  }));
 
   const stripRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,7 +68,6 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
     el.style.transition = "none";
     el.style.transform = `translateX(${-getWidth()}px)`;
 
-    // Recalculate on resize (e.g. orientation change)
     function onResize() {
       if (isAnimating.current) return;
       el!.style.transition = "none";
@@ -93,7 +118,6 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
     }, SNAP_DURATION);
   }, [setWeekDate]);
 
-  // Native touch listeners with { passive: false } so preventDefault actually works
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -107,21 +131,16 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
 
     function onTouchMove(e: TouchEvent) {
       if (isAnimating.current || touchStartX.current === null || touchStartY.current === null) return;
-
       const dx = e.touches[0].clientX - touchStartX.current;
       const dy = e.touches[0].clientY - touchStartY.current;
-
-      // Axis lock: wait for first 6px of movement to decide direction
       if (isHorizontal.current === null) {
         if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
           isHorizontal.current = Math.abs(dx) > Math.abs(dy);
         }
         return;
       }
-
       if (!isHorizontal.current) return;
-
-      e.preventDefault(); // works because listener is non-passive
+      e.preventDefault();
       setTranslate(dx, false);
     }
 
@@ -132,14 +151,11 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
         isHorizontal.current = null;
         return;
       }
-
       const dx = e.changedTouches[0].clientX - touchStartX.current;
       const threshold = getWidth() * SNAP_THRESHOLD;
-
       touchStartX.current = null;
       touchStartY.current = null;
       isHorizontal.current = null;
-
       if (dx < -threshold) snapTo("next");
       else if (dx > threshold) snapTo("prev");
       else snapTo("center");
@@ -166,7 +182,6 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
     <div className="sticky top-0 z-20 bg-[#070B14] border-b border-white/10">
       <div className="relative px-2 py-3">
 
-        {/* FIXED ARROWS */}
         <button onClick={() => snapTo("prev")} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 z-10">
           <ChevronLeft size={20} />
         </button>
@@ -174,21 +189,13 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
           <ChevronRight size={20} />
         </button>
 
-        {/* SWIPEABLE DATE STRIP */}
         <div ref={containerRef} className="overflow-hidden mx-9">
-          <div
-            ref={stripRef}
-            className="flex"
-            style={{
-              width: "300%",
-              willChange: "transform",
-            }}
-          >
+          <div ref={stripRef} className="flex" style={{ width: "300%", willChange: "transform" }}>
             {weeks.map((days, wi) => (
               <div key={wi} style={{ width: "33.333%" }}>
                 <div className="flex justify-between">
                   {days.map((day) => {
-                    const selected = isSameDay(day, selectedDay);
+                    const hasCircle = isSameDay(day, displayedDay);
                     return (
                       <button
                         key={day.toISOString()}
@@ -198,11 +205,17 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
                         <span className="text-xs text-slate-400">
                           {formatDayLabel(day)}
                         </span>
-                        <div className={`
-                          mt-1 h-10 w-10 rounded-full flex items-center justify-center text-sm transition
-                          ${selected ? "bg-blue-600 text-white" : "bg-transparent"}
-                        `}>
-                          {formatDayNumber(day)}
+                        <div className="relative mt-1 h-10 w-10 flex items-center justify-center">
+                          <div
+                            className="absolute inset-0 rounded-full bg-blue-600"
+                            style={{
+                              opacity: hasCircle ? (circleVisible ? 1 : 0) : 0,
+                              transition: circleVisible ? "opacity 700ms ease" : "opacity 300ms ease",
+                            }}
+                          />
+                          <span className="relative z-10 text-sm">
+                            {formatDayNumber(day)}
+                          </span>
                         </div>
                       </button>
                     );
@@ -214,19 +227,17 @@ export default function WeekBar({ selectedDay, onSelectDay, weekDate, setWeekDat
         </div>
       </div>
 
-      {/* TODAY BUTTON */}
       <div className="flex justify-center">
         <button
           onClick={onToday}
           disabled={viewingToday}
-          className={`
-            px-8 py-2 rounded-lg transition mb-4
-            ${viewingToday ? "opacity-50 cursor-not-allowed bg-white/10" : "bg-blue-600 hover:bg-blue-500"}
-          `}
+          className={`px-8 py-2 rounded-lg transition mb-4 ${viewingToday ? "opacity-50 cursor-not-allowed bg-white/10" : "bg-blue-600 hover:bg-blue-500"}`}
         >
           Today
         </button>
       </div>
     </div>
   );
-}
+});
+
+export default WeekBar;
