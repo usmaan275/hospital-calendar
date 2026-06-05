@@ -33,6 +33,7 @@ const COLORS = [
 
 export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Props) {
   const [visits, setVisits] = useState<Visit[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   async function loadVisits() {
     const { data } = await supabase
@@ -40,6 +41,7 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
       .select("*")
       .order("start_time");
     setVisits((data as Visit[]) || []);
+    setIsLoaded(true);
   }
 
   useEffect(() => {
@@ -148,8 +150,15 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
         </button>
       </div>
 
-      {/* GRID */}
-      <div className="relative">
+      {/* SPINNER — shown while loading */}
+      {!isLoaded && (
+        <div className="flex items-center justify-center py-32">
+          <div className="h-8 w-8 rounded-full border-[3px] border-blue-600/30 border-t-blue-600 animate-spin" />
+        </div>
+      )}
+
+      {/* GRID — fades in once loaded */}
+      <div className="relative" style={{ opacity: isLoaded ? 1 : 0, transition: "opacity 400ms ease" }}>
         <div className="flex">
           <div className="w-14 pr-2 text-right text-xs text-slate-400">
             {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => {

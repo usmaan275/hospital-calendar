@@ -106,7 +106,7 @@ export default function HomePage() {
         carousel.style.transition = "opacity 1000ms ease";
         carousel.style.opacity = "1";
       }
-    }, 120);
+    }, 400);
   }
 
   // Native touch listeners with { passive: false } so preventDefault actually works
