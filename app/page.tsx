@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { addDays, subDays } from "date-fns";
+import { addDays, subDays, isSameDay } from "date-fns";
 
 import WeekBar, { WeekBarHandle } from "@/components/WeekBar";
 import DayView from "@/components/DayView";
@@ -66,12 +66,17 @@ export default function HomePage() {
     }
 
     isAnimating.current = true;
+
+    const current = selectedDayRef.current;
+    const newDay = direction === "next" ? addDays(current, 1) : subDays(current, 1);
+
+    // Start fading circle and Today button immediately on finger lift
+    weekBarRef.current?.transitionCircle(newDay);
+    weekBarRef.current?.updateToday(isSameDay(newDay, new Date()));
+
     setTranslate(direction === "next" ? -getWidth() : getWidth(), true);
 
     setTimeout(() => {
-      const current = selectedDayRef.current;
-      const newDay = direction === "next" ? addDays(current, 1) : subDays(current, 1);
-
       const el = stripRef.current;
       if (el) {
         el.style.transition = "none";
@@ -84,9 +89,6 @@ export default function HomePage() {
       setSelectedDay(newDay);
       setWeekDate(newDay);
 
-      // Trigger circle transition in sync with panel swap
-      weekBarRef.current?.transitionCircle(newDay);
-
       isAnimating.current = false;
     }, SNAP_DURATION);
   }, []);
@@ -96,10 +98,11 @@ export default function HomePage() {
 
     // Fade out carousel and circle simultaneously
     if (carousel) {
-      carousel.style.transition = "opacity 400ms ease";
+      carousel.style.transition = "opacity 200ms ease";
       carousel.style.opacity = "0";
     }
     weekBarRef.current?.transitionCircle(day);
+    weekBarRef.current?.updateToday(isSameDay(day, new Date()));
 
     setTimeout(() => {
       setDays([subDays(day, 1), day, addDays(day, 1)]);
@@ -111,10 +114,10 @@ export default function HomePage() {
         el.style.transform = `translateX(${-getWidth()}px)`;
       }
       if (carousel) {
-        carousel.style.transition = "opacity 700ms ease";
+        carousel.style.transition = "opacity 500ms ease";
         carousel.style.opacity = "1";
       }
-    }, 400);
+    }, 200);
   }
 
   useEffect(() => {
@@ -122,7 +125,7 @@ export default function HomePage() {
     if (carousel) {
       carousel.style.opacity = "0";
       requestAnimationFrame(() => {
-        carousel.style.transition = "opacity 700ms ease";
+        carousel.style.transition = "opacity 500ms ease";
         carousel.style.opacity = "1";
       });
     }

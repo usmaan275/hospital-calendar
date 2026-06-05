@@ -144,7 +144,7 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
               color: COLORS[Math.floor(Math.random() * COLORS.length)],
             });
           }}
-          className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 active:scale-[0.98] transition text-sm"
+          className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer active:scale-[0.98] transition text-sm"
         >
           🌙 Night Shift
         </button>
@@ -158,7 +158,7 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
       )}
 
       {/* GRID — fades in once loaded */}
-      <div className="relative" style={{ opacity: isLoaded ? 1 : 0, transition: "opacity 300ms ease" }}>
+      <div className="relative" style={{ opacity: isLoaded ? 1 : 0, transition: "opacity 200ms ease" }}>
         <div className="flex">
           <div className="w-14 pr-2 text-right text-xs text-slate-300">
             {Array.from({ length: END_HOUR - START_HOUR }).map((_, i) => {

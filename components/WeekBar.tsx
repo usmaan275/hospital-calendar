@@ -8,6 +8,7 @@ import { getWeekDays, formatDayLabel, formatDayNumber } from "@/lib/dates";
 
 export interface WeekBarHandle {
   transitionCircle: (toDay: Date) => void;
+  updateToday: (isToday: boolean) => void;
 }
 
 interface Props {
@@ -32,6 +33,7 @@ const WeekBar = forwardRef<WeekBarHandle, Props>(function WeekBar(
   const [displayedDay, setDisplayedDay] = useState(selectedDay);
   const [circleVisible, setCircleVisible] = useState(true);
   const circleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [todayVisible, setTodayVisible] = useState(!isSameDay(selectedDay, new Date()));
 
   // Called by page.tsx at exactly the right moment for each interaction
   useImperativeHandle(ref, () => ({
@@ -39,12 +41,15 @@ const WeekBar = forwardRef<WeekBarHandle, Props>(function WeekBar(
       if (isSameDay(displayedDay, toDay)) return;
       if (circleTimerRef.current) clearTimeout(circleTimerRef.current);
 
-      // Fade out (300ms), then swap and fade in (700ms)
+      // Fade out (200ms), then swap and fade in (500ms)
       setCircleVisible(false);
       circleTimerRef.current = setTimeout(() => {
         setDisplayedDay(toDay);
         setCircleVisible(true);
-      }, 300);
+      }, 200);
+    },
+    updateToday(isToday: boolean) {
+      setTodayVisible(!isToday);
     },
   }));
 
@@ -182,10 +187,10 @@ const WeekBar = forwardRef<WeekBarHandle, Props>(function WeekBar(
     <div className="sticky top-0 z-20 bg-[#070B14] border-b border-white/10">
       <div className="relative px-2 py-3">
 
-        <button onClick={() => snapTo("prev")} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 z-10">
+        <button onClick={() => snapTo("prev")} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 z-10 cursor-pointer">
           <ChevronLeft size={20} />
         </button>
-        <button onClick={() => snapTo("next")} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 z-10">
+        <button onClick={() => snapTo("next")} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 z-10 cursor-pointer">
           <ChevronRight size={20} />
         </button>
 
@@ -210,10 +215,10 @@ const WeekBar = forwardRef<WeekBarHandle, Props>(function WeekBar(
                             className="absolute inset-0 rounded-full bg-blue-600"
                             style={{
                               opacity: hasCircle ? (circleVisible ? 1 : 0) : 0,
-                              transition: circleVisible ? "opacity 700ms ease" : "opacity 300ms ease",
+                              transition: circleVisible ? "opacity 500ms ease" : "opacity 200ms ease",
                             }}
                           />
-                          <span className="relative z-10 text-sm">
+                          <span className="relative z-10 text-sm cursor-pointer">
                             {formatDayNumber(day)}
                           </span>
                         </div>
@@ -230,8 +235,14 @@ const WeekBar = forwardRef<WeekBarHandle, Props>(function WeekBar(
       <div className="flex justify-center">
         <button
           onClick={onToday}
-          disabled={viewingToday}
-          className={`px-8 py-2 rounded-lg transition mb-4 ${viewingToday ? "opacity-50 cursor-not-allowed bg-white/10" : "bg-blue-600 hover:bg-blue-500"}`}
+          disabled={!todayVisible}
+          className={`px-8 py-2 rounded-lg mb-4 ${!todayVisible ? "cursor-not-allowed bg-white/10" : "bg-blue-600 hover:bg-blue-500 cursor-pointer"}`}
+          style={{
+            opacity: todayVisible ? 1 : 0.4,
+            transition: todayVisible
+              ? "opacity 500ms ease 200ms, background-color 500ms ease 200ms" // Needs to do 200ms + the 500ms to match with the circle
+              : "opacity 200ms, background-color 200ms",
+          }}
         >
           Today
         </button>
