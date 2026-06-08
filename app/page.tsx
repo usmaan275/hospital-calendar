@@ -202,7 +202,7 @@ export default function HomePage() {
   }, [snapTo]);
 
   return (
-    <main className="min-h-screen bg-[#070B14] text-white overflow-hidden">
+    <main className="min-h-screen bg-[#070B14] text-white">
       <WeekBar
         ref={weekBarRef}
         selectedDay={selectedDay}
