@@ -12,7 +12,7 @@ interface Props {
   onVisitsLoaded?: (reload: () => void) => void;
 }
 
-const START_HOUR = 7;
+const START_HOUR = 6;
 const END_HOUR = 23;
 const PX_PER_HOUR = 64;
 
