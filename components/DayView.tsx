@@ -135,7 +135,7 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
             start.setHours(22, 0, 0, 0);
             const end = new Date(selectedDay);
             end.setDate(end.getDate() + 1);
-            end.setHours(10, 0, 0, 0);
+            end.setHours(7, 0, 0, 0);
             onOpenForm({
               id: "",
               name: "",
