@@ -126,8 +126,8 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
     <div className="p-4">
       {/* HEADER */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold">
-          {format(selectedDay, "EEEE d MMMM yyyy")}
+        <h2 className="text-sm font-semibold">
+          {format(selectedDay, "EEEE do MMMM yyyy")}
         </h2>
         <button
           onClick={() => {
