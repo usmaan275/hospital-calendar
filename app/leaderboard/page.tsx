@@ -69,7 +69,10 @@ export default function LeaderboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#070B14] text-white flex items-center justify-center">
-        Loading leaderboard...
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 rounded-full border-[3px] border-blue-600/30 border-t-blue-600 animate-spin" />
+          <p>Loading leaderboard...</p>
+        </div>
       </div>
     );
   }
