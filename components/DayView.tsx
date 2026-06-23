@@ -211,8 +211,8 @@ export default function DayView({ selectedDay, onOpenForm, onVisitsLoaded }: Pro
                     }}
                   >
                     {(() => {
-                      const durationMins = (end.getTime() - start.getTime()) / (1000 * 60);
-                      const isShort = durationMins < 60;
+                      const visibleDurationMins = (visibleEnd.getTime() - visibleStart.getTime()) / (1000 * 60);
+                      const isShort = visibleDurationMins < 60;
                       return isShort ? (
                         <div className="text-xs leading-tight truncate">
                           <span className="font-semibold">{visit.name}</span>
