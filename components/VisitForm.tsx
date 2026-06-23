@@ -77,7 +77,9 @@ export default function VisitForm({ open, setOpen, visit, onSaved }: Props) {
   async function save() {
     setSaving(true);
 
-    if (!name.trim()) {
+    const cleanName = name.trim();
+
+    if (!cleanName) {
       alert("Please enter a name");
       setSaving(false);
       return;
@@ -96,7 +98,7 @@ export default function VisitForm({ open, setOpen, visit, onSaved }: Props) {
       await supabase
         .from("visits")
         .update({
-          name,
+          name: cleanName,
           start_time: startDate.toISOString(),
           end_time: finalEndDate.toISOString(),
           color,
@@ -104,7 +106,7 @@ export default function VisitForm({ open, setOpen, visit, onSaved }: Props) {
         .eq("id", currentVisit.id);
     } else {
       await supabase.from("visits").insert({
-        name,
+        name: cleanName,
         start_time: startDate.toISOString(),
         end_time: finalEndDate.toISOString(),
         color,
